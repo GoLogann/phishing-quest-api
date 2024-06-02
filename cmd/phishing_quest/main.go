@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	"log"
-	"phishing-quest/di"
+	"phishing-quest/internal/config/di"
 )
 
 func main() {

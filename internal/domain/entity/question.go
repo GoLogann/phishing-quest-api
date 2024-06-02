@@ -1,4 +1,4 @@
-package domain
+package entity
 
 type Question struct {
 	Id            int
