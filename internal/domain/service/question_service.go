@@ -11,7 +11,7 @@ type QuestionService struct {
 }
 
 func NewQuestionService(repo *database.QuestionRepository) *QuestionService {
-	return &QuestionService{repo: repo}
+	return &QuestionService{}
 }
 
 func (s *QuestionService) CreateQuestion(categoryId int, questionText, correctAnswer string) (*entity.Question, error) {

@@ -11,7 +11,7 @@ type UserService struct {
 }
 
 func NewUserService(repo *database.UserRepository) *UserService {
-	return &UserService{repo: repo}
+	return &UserService{}
 }
 
 func (s *UserService) CreateUser(username, email, passwordHash string) (*entity.User, error) {
