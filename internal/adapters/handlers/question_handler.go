@@ -3,15 +3,15 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"phishing-quest/usecase"
+	"phishing-quest/internal/domain/service"
 	"strconv"
 )
 
 type QuestionHandler struct {
-	questionService *usecase.QuestionService
+	questionService *service.QuestionService
 }
 
-func NewQuestionHandler(questionService *usecase.QuestionService) *QuestionHandler {
+func NewQuestionHandler(questionService *service.QuestionService) *QuestionHandler {
 	return &QuestionHandler{questionService: questionService}
 }
 
@@ -51,18 +51,18 @@ func (h *QuestionHandler) GetQuestionByID(c *gin.Context) {
 	c.JSON(http.StatusOK, question)
 }
 
-func (h *QuestionHandler) GetQuestionsByCategory(c *gin.Context) {
-	categoryID, err := strconv.Atoi(c.Param("category_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid category ID"})
-		return
-	}
-
-	questions, err := h.questionService.GetQuestionsByCategory(categoryID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, questions)
-}
+//func (h *QuestionHandler) GetQuestionsByCategory(c *gin.Context) {
+//	categoryID, err := strconv.Atoi(c.Param("category_id"))
+//	if err != nil {
+//		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid category ID"})
+//		return
+//	}
+//
+//	questions, err := h.questionService.GetQuestionsByCategory(categoryID)
+//	if err != nil {
+//		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+//		return
+//	}
+//
+//	c.JSON(http.StatusOK, questions)
+//}

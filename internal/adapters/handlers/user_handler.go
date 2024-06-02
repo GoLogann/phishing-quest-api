@@ -3,14 +3,14 @@ package handlers
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"phishing-quest/usecase"
+	"phishing-quest/internal/domain/service"
 )
 
 type UserHandler struct {
-	userService *usecase.UserService
+	userService *service.UserService
 }
 
-func NewUserHandler(userService *usecase.UserService) *UserHandler {
+func NewUserHandler(userService *service.UserService) *UserHandler {
 	return &UserHandler{userService: userService}
 }
 
