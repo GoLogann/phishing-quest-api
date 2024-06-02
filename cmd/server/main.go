@@ -11,10 +11,18 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer func(db *sql.DB) {
+		err = db.Close()
+		if err != nil {
+
+		}
+	}(db)
 
 	container := di.NewContainer(db)
 
 	r := container.Router()
-	r.Run(":8082")
+	err = r.Run(":8082")
+	if err != nil {
+		return
+	}
 }

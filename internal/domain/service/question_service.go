@@ -1,6 +1,7 @@
 package service
 
 import (
+	"phishing-quest/internal/adapters/database"
 	"phishing-quest/internal/domain/entity"
 	"phishing-quest/internal/domain/repository"
 )
@@ -9,7 +10,7 @@ type QuestionService struct {
 	repo repository.QuestionRepository
 }
 
-func NewQuestionService(repo repository.QuestionRepository) *QuestionService {
+func NewQuestionService(repo *database.QuestionRepository) *QuestionService {
 	return &QuestionService{repo: repo}
 }
 

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"phishing-quest/internal/adapters/database"
 	"phishing-quest/internal/domain/entity"
 	"phishing-quest/internal/domain/repository"
 )
@@ -9,7 +10,7 @@ type UserService struct {
 	repo repository.UserRepository
 }
 
-func NewUserService(repo repository.UserRepository) *UserService {
+func NewUserService(repo *database.UserRepository) *UserService {
 	return &UserService{repo: repo}
 }
 

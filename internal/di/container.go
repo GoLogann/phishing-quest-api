@@ -3,6 +3,7 @@ package di
 import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
+	"phishing-quest/internal/adapters/database"
 	handlers2 "phishing-quest/internal/adapters/handlers"
 	"phishing-quest/internal/domain/service"
 )
@@ -21,10 +22,10 @@ type Container struct {
 func NewContainer(db *sql.DB) *Container {
 	// Repositórios
 
-	userRepo := db.NewUserRepository(db)
-	questionRepo := db.NewQuestionRepository(db)
-	//answerRepo := database.NewAnswerRepository(db)
-	//categoryRepo := database.NewCategoryRepository(db)
+	userRepo := database.NewUserRepository(db)
+	questionRepo := database.NewQuestionRepository(db)
+	//answerRepo := database.NewAnswerRepository(database)
+	//categoryRepo := database.NewCategoryRepository(database)
 
 	// Serviços
 	userService := service.NewUserService(userRepo)
@@ -60,7 +61,7 @@ func (c *Container) Router() *gin.Engine {
 	// Roteamento de perguntas
 	r.POST("/questions", c.QuestionHandler.CreateQuestion)
 	r.GET("/questions/:id", c.QuestionHandler.GetQuestionByID)
-	r.GET("/questions/category/:category_id", c.QuestionHandler.GetQuestionsByCategory)
+	//r.GET("/questions/category/:category_id", c.QuestionHandler.GetQuestionsByCategory)
 
 	// Roteamento de respostas
 	//r.POST("/answers", c.AnswerHandler.CreateAnswer)
