@@ -1,0 +1,33 @@
+version: '3.7'
+services:
+  plataformagt-postgresql:
+    image: postgres:10.17
+    container_name: phishing_quest-postgresql
+    environment:
+      POSTGRES_DB: phishing_quest
+      POSTGRES_USER: labsc
+      POSTGRES_PASSWORD: phishingquest
+    volumes:
+      - ./database/initdb.sh:/docker-entrypoint-initdb.d/initdb.sh
+    ports:
+      - "5432:5432"
+    networks:
+      - phishingquest-network
+
+  phishing_quest-flyway-phishing_quest:
+    image: flyway/flyway:6.3.1
+    container_name: phishingquest-flyway-phishing_quest
+    command: -configFiles=/flyway/conf/flyway.config -locations=filesystem:/flyway/sql -connectRetries=60 migrate
+    volumes:
+      - ./../../migrate/br/changelogs:/flyway/sql
+      - ./../../migrate/br/flyway.config:/flyway/conf/flyway.config
+    networks:
+      - phishing_quest-network
+networks:
+  phishing_quest-network:
+    driver: bridge
+    name: phishing_quest-network
+
+volumes:
+  volume-redis:
+    driver: local
