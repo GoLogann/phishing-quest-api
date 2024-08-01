@@ -1,0 +1,15 @@
+app:
+  name: LabSC - Phishing Quest
+  version: v1.0.0
+logger:
+  level: debug
+  encoding: console #console or json
+http:
+  enabled: true
+  port: 8088
+db:
+  enabled: true
+  type: postgres
+  showsql: true
+  schema: pessoas
+  connectionstring: "host=localhost user=labsc password=phishingquest dbname=phishing_quest port=5432"
