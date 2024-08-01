@@ -4,7 +4,6 @@ import (
 	"errors"
 	"phishing-quest/adapter/repository"
 	"phishing-quest/domain"
-	"time"
 )
 
 // UserUseCase representa os casos de uso relacionados a usuários
@@ -30,8 +29,8 @@ func (uc *UserUseCase) CreateUser(userRequest *domain.User) (*domain.User, error
 		PasswordHash: userRequest.PasswordHash,
 		XP:           0,
 		TotalScore:   0,
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		//CreatedAt:    time.Now(),
+		//UpdatedAt:    time.Now(),
 	}
 
 	if err := uc.userRepo.Create(user); err != nil {
@@ -44,20 +43,20 @@ func (uc *UserUseCase) CreateUser(userRequest *domain.User) (*domain.User, error
 // UpdatePassword atualiza a senha do usuário
 func (uc *UserUseCase) UpdatePassword(user *domain.User, newPasswordHash string) {
 	user.PasswordHash = newPasswordHash
-	user.UpdatedAt = time.Now()
+	//user.UpdatedAt = time.Now()
 	// lógica adicional, como persistência, pode ser adicionada aqui
 }
 
 // AddXP adiciona uma quantidade específica de XP ao usuário
 func (uc *UserUseCase) AddXP(user *domain.User, amount int) {
 	user.XP += amount
-	user.UpdatedAt = time.Now()
+	//user.UpdatedAt = time.Now()
 	// lógica adicional, como persistência, pode ser adicionada aqui
 }
 
 // AddScore adiciona uma quantidade específica de pontos ao total do usuário
 func (uc *UserUseCase) AddScore(user *domain.User, score int) {
 	user.TotalScore += score
-	user.UpdatedAt = time.Now()
+	//user.UpdatedAt = time.Now()
 	// lógica adicional, como persistência, pode ser adicionada aqui
 }
