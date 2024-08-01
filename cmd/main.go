@@ -2,16 +2,19 @@ package main
 
 import (
 	"phishing-quest/adapter/http"
-	"phishing-quest/postgres"
+	"phishing-quest/container"
 )
 
 func main() {
-	postgres.InitDB()
+	// Inicializa o container de dependências
+	cont := container.NewContainer()
 
-	r := http.SetupRouter()
+	// Configura o router com os handlers do container
+	r := http.SetupRouter(cont)
 
+	// Inicia o servidor
 	err := r.Run(":8080")
 	if err != nil {
-		panic("failed to start server")
+		return
 	}
 }

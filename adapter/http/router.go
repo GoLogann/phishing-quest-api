@@ -3,15 +3,14 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"phishing-quest/adapter/http/router"
+	"phishing-quest/container"
 )
 
-func SetupRouter() *gin.Engine {
+func SetupRouter(cont *container.Container) *gin.Engine {
 	r := gin.Default()
 
-	router.SetupUserRoutes(r)
-	router.SetupCategoryRoutes(r)
-	//router.SetupQuestionRoutes(r)
-	//router.SetupAnswerRoutes(r)
+	// Configuração das rotas com os handlers do container
+	router.SetupUserRoutes(r, cont.UserHandler)
 
 	return r
 }

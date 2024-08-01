@@ -15,8 +15,9 @@ type userRepository struct {
 	db *gorm.DB
 }
 
+// NewUserRepository cria uma nova instância de userRepository
 func NewUserRepository(db *gorm.DB) UserRepository {
-	return &userRepository{db}
+	return &userRepository{db: db}
 }
 
 func (r *userRepository) Create(user *domain.User) error {
