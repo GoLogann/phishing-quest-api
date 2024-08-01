@@ -19,8 +19,8 @@ services:
     container_name: phishingquest-flyway-phishing_quest
     command: -configFiles=/flyway/conf/flyway.config -locations=filesystem:/flyway/sql -connectRetries=60 migrate
     volumes:
-      - ./../../migrate/br/changelogs:/flyway/sql
-      - ./../../migrate/br/flyway.config:/flyway/conf/flyway.config
+      - /c/Users/logan/phishing-quest-api/migrate/br/changelogs:/flyway/sql
+      - /c/Users/logan/phishing-quest-api/migrate/br/flyway.config:/flyway/conf/flyway.config
     networks:
       - phishing_quest-network
 networks:
