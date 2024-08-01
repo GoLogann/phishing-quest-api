@@ -1,6 +1,6 @@
 version: '3.7'
 services:
-  plataformagt-postgresql:
+  phishing_quest-postgresql:
     image: postgres:10.17
     container_name: phishing_quest-postgresql
     environment:
@@ -8,11 +8,11 @@ services:
       POSTGRES_USER: labsc
       POSTGRES_PASSWORD: phishingquest
     volumes:
-      - ./database/initdb.sh:/docker-entrypoint-initdb.d/initdb.sh
+      - ./initdb.sh:/docker-entrypoint-initdb.d/initdb.sh
     ports:
       - "5432:5432"
     networks:
-      - phishingquest-network
+      - phishing_quest-network
 
   phishing_quest-flyway-phishing_quest:
     image: flyway/flyway:6.3.1
