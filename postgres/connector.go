@@ -14,7 +14,6 @@ func InitDB() *gorm.DB {
 	var err error
 	fmt.Println("Connecting to PostgreSQL...")
 
-	// Atualize o DSN com as credenciais corretas e o host que está sendo usado no Docker Compose
 	dsn := "host=localhost user=labsc password=phishingquest dbname=phishing_quest port=5432 sslmode=disable search_path=phishing_quest"
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
