@@ -2,8 +2,11 @@ package usecase
 
 import (
 	"errors"
+	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 	"phishing-quest/adapter/repository"
 	"phishing-quest/domain"
+	"time"
 )
 
 // UserUseCase representa os casos de uso relacionados a usuários
@@ -23,17 +26,27 @@ func (uc *UserUseCase) CreateUser(userRequest *domain.User) (*domain.User, error
 		return nil, errors.New("email já está em uso")
 	}
 
-	user := &domain.User{
-		Username:     userRequest.Username,
-		Email:        userRequest.Email,
-		PasswordHash: userRequest.PasswordHash,
-		XP:           0,
-		TotalScore:   0,
-		//CreatedAt:    time.Now(),
-		//UpdatedAt:    time.Now(),
+	hashedPassword, err := uc.HashPassword(userRequest.Password)
+	if err != nil {
+		return nil, errors.New("erro ao gerar hash da senha")
 	}
 
-	if err := uc.userRepo.Create(user); err != nil {
+	user := &domain.User{
+		Id:           uuid.New(),
+		Username:     userRequest.Username,
+		Email:        userRequest.Email,
+		Password:     userRequest.Password,
+		PasswordHash: hashedPassword,
+		TotalScore:   0,
+		CreatedAt:    time.Now(),
+	}
+
+	err = user.Validate()
+	if err != nil {
+		return nil, err
+	}
+
+	if err = uc.userRepo.Create(user); err != nil {
 		return nil, err
 	}
 
@@ -43,20 +56,22 @@ func (uc *UserUseCase) CreateUser(userRequest *domain.User) (*domain.User, error
 // UpdatePassword atualiza a senha do usuário
 func (uc *UserUseCase) UpdatePassword(user *domain.User, newPasswordHash string) {
 	user.PasswordHash = newPasswordHash
-	//user.UpdatedAt = time.Now()
-	// lógica adicional, como persistência, pode ser adicionada aqui
-}
-
-// AddXP adiciona uma quantidade específica de XP ao usuário
-func (uc *UserUseCase) AddXP(user *domain.User, amount int) {
-	user.XP += amount
-	//user.UpdatedAt = time.Now()
-	// lógica adicional, como persistência, pode ser adicionada aqui
+	user.UpdatedAt = time.Now()
 }
 
 // AddScore adiciona uma quantidade específica de pontos ao total do usuário
 func (uc *UserUseCase) AddScore(user *domain.User, score int) {
 	user.TotalScore += score
-	//user.UpdatedAt = time.Now()
-	// lógica adicional, como persistência, pode ser adicionada aqui
+	user.UpdatedAt = time.Now()
+}
+
+// HashPassword recebe uma senha e retorna o hash dela.
+func (uc *UserUseCase) HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(bytes), err
+}
+
+func (uc *UserUseCase) CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
