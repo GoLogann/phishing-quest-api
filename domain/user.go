@@ -25,15 +25,3 @@ func (u *User) Validate() error {
 	validate := validator.New()
 	return validate.Struct(u)
 }
-
-// NewUser é um construtor para criar um novo usuário
-func NewUser(username, email, passwordHash string) *User {
-	return &User{
-		Username:     username,
-		Email:        email,
-		PasswordHash: passwordHash,
-		TotalScore:   0,
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
-	}
-}

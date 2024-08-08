@@ -1,5 +1,3 @@
-CREATE SCHEMA IF NOT EXISTS phishing_quest;
-
 CREATE TABLE IF NOT EXISTS phishing_quest.users (
                                                     id UUID PRIMARY KEY,
                                                     username VARCHAR(255) NOT NULL UNIQUE,
