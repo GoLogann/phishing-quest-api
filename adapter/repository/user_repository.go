@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"phishing-quest/domain"
 )
@@ -21,6 +22,11 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 }
 
 func (r *userRepository) Create(user *domain.User) error {
+	logrus.WithFields(logrus.Fields{
+		"username": user.Username,
+		"email":    user.Email,
+	}).Info("Create new user")
+
 	return r.db.Create(user).Error
 }
 
