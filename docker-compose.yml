@@ -19,15 +19,23 @@ services:
     container_name: phishingquest-flyway-phishing_quest
     command: -configFiles=/flyway/conf/flyway.config -locations=filesystem:/flyway/sql -connectRetries=60 migrate
     volumes:
-      - /c/Users/logan/phishing-quest-api/migrate/br/changelogs:/flyway/sql
-      - /c/Users/logan/phishing-quest-api/migrate/br/flyway.config:/flyway/conf/flyway.config
+      - ./../migrate/changelogs:/flyway/sql
+      - ./../migrate/flyway.config:/flyway/conf/flyway.config
     networks:
       - phishing_quest-network
+
+  phishing_quest-api:
+    build: .
+    container_name: phishing_quest-api
+    ports:
+      - "8080:8080"
+    networks:
+      - phishing_quest-network
+    depends_on:
+      - phishing_quest-postgresql
+      - phishing_quest-flyway-phishing_quest
+
 networks:
   phishing_quest-network:
     driver: bridge
     name: phishing_quest-network
-
-volumes:
-  volume-redis:
-    driver: local
