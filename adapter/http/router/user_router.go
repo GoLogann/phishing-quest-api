@@ -10,7 +10,7 @@ func SetupUserRoutes(router *gin.Engine, userHandler *handler.UserHandler) {
 	userGroup := router.Group("/api/v1/users")
 	{
 		userGroup.POST("", userHandler.CreateUser)
+		userGroup.POST("/login", userHandler.Login)
 		userGroup.GET("/:id", userHandler.GetUser)
-		// Outras rotas relacionadas a usuários
 	}
 }
