@@ -6,6 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"phishing-quest/adapter/repository"
 	"phishing-quest/domain"
+	"phishing-quest/dto"
 	"time"
 )
 
@@ -48,6 +49,19 @@ func (uc *UserUseCase) CreateUser(userRequest *domain.User) (*domain.User, error
 
 	if err = uc.userRepo.Create(user); err != nil {
 		return nil, err
+	}
+
+	return user, nil
+}
+
+func (uc *UserUseCase) Login(userRequest *dto.UserLoginDTO) (*domain.User, error) {
+	user, err := uc.userRepo.GetByEmail(userRequest.Email)
+	if err != nil {
+		return nil, errors.New("usuário não encontrado")
+	}
+
+	if !uc.CheckPasswordHash(userRequest.Password, user.PasswordHash) {
+		return nil, errors.New("senha incorreta")
 	}
 
 	return user, nil
