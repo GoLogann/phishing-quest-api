@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"phishing-quest/core/usecase"
 	"phishing-quest/domain"
+	"phishing-quest/dto"
 )
 
 type UserHandler struct {
@@ -25,6 +26,23 @@ func (uh *UserHandler) CreateUser(c *gin.Context) {
 	}
 
 	user, err := uh.UserUseCase.CreateUser(userDTO)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+// Login Realiza login usando credenciais do usuário
+func (uh *UserHandler) Login(c *gin.Context) {
+	var userLoginDTO *dto.UserLoginDTO
+	if err := c.ShouldBindJSON(&userLoginDTO); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := uh.UserUseCase.Login(userLoginDTO)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
