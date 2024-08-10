@@ -2,27 +2,29 @@ package usecase
 
 import (
 	"errors"
-	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"phishing-quest/adapter/repository"
 	"phishing-quest/domain"
 	"phishing-quest/dto"
 	"time"
+
+	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
-// UserUseCase representa os casos de uso relacionados a usuários
 type UserUseCase struct {
 	userRepo repository.UserRepository
 }
 
-// NewUserUseCase cria um novo caso de uso para usuários
 func NewUserUseCase(userRepo repository.UserRepository) *UserUseCase {
 	return &UserUseCase{userRepo: userRepo}
 }
 
-// CreateUser cria um novo usuário
 func (uc *UserUseCase) CreateUser(userRequest *domain.User) (*domain.User, error) {
-	existingUser, _ := uc.userRepo.GetByEmail(userRequest.Email)
+	existingUser, err := uc.userRepo.GetByEmail(userRequest.Email)
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
 	if existingUser != nil {
 		return nil, errors.New("email já está em uso")
 	}
@@ -67,19 +69,16 @@ func (uc *UserUseCase) Login(userRequest *dto.UserLoginDTO) (*domain.User, error
 	return user, nil
 }
 
-// UpdatePassword atualiza a senha do usuário
 func (uc *UserUseCase) UpdatePassword(user *domain.User, newPasswordHash string) {
 	user.PasswordHash = newPasswordHash
 	user.UpdatedAt = time.Now()
 }
 
-// AddScore adiciona uma quantidade específica de pontos ao total do usuário
 func (uc *UserUseCase) AddScore(user *domain.User, score int) {
 	user.TotalScore += score
 	user.UpdatedAt = time.Now()
 }
 
-// HashPassword recebe uma senha e retorna o hash dela.
 func (uc *UserUseCase) HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
