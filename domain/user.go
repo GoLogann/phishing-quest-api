@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-// User representa a entidade de um usuário no sistema
 type User struct {
 	Id           uuid.UUID `json:"id" gorm:"primaryKey"`
 	Username     string    `json:"username" validate:"required,min=1,max=255"`
