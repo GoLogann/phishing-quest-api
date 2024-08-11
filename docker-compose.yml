@@ -1,8 +1,8 @@
 version: '3.7'
 services:
-  phishing_quest-postgresql:
+  phishing-quest-postgresql:
     image: postgres:10.17
-    container_name: phishing_quest-postgresql
+    container_name: phishing-quest-postgresql
     environment:
       POSTGRES_DB: phishing_quest
       POSTGRES_USER: labsc
@@ -12,30 +12,30 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - phishing_quest-network
+      - phishing-quest-network
 
-  phishing_quest-flyway-phishing_quest:
+  phishing-quest-flyway-phishing-quest:
     image: flyway/flyway:6.3.1
-    container_name: phishingquest-flyway-phishing_quest
+    container_name: phishingquest-flyway-phishing-quest
     command: -configFiles=/flyway/conf/flyway.config -locations=filesystem:/flyway/sql -connectRetries=60 migrate
     volumes:
       - ./../migrate/changelogs:/flyway/sql
       - ./../migrate/flyway.config:/flyway/conf/flyway.config
     networks:
-      - phishing_quest-network
+      - phishing-quest-network
 
-  phishing_quest-api:
+  phishing-quest-api:
     build: .
-    container_name: phishing_quest-api
+    container_name: phishing-quest-api
     ports:
       - "8080:8080"
     networks:
-      - phishing_quest-network
+      - phishing-quest-network
     depends_on:
-      - phishing_quest-postgresql
-      - phishing_quest-flyway-phishing_quest
+      - phishing-quest-postgresql
+      - phishing-quest-flyway-phishing-quest
 
 networks:
-  phishing_quest-network:
+  phishing-quest-network:
     driver: bridge
-    name: phishing_quest-network
+    name: phishing-quest-network
