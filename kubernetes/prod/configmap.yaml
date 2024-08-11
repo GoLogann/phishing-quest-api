@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: phishing-quest-config
+  labels:
+    app: phishing-quest
+data:
+  config.yaml: |
+    app:
+      name: LabSC - Phishing Quest
+      version: @SED_VERSION
+    logger:
+      level: info
+      encoding: console #console or json
+    http:
+      enabled: true
+      port: 8080
+    db:
+      enabled: true
+      type: postgres
+      showsql: false
+      schema: capital
+      connectionstring: "host=phishingquest-db.cm90sapdvq98.sa-east-1.rds.amazonaws.com user=@DB_USERNAME password=@DB_PASSWORD dbname=phishingquest port=5432"
