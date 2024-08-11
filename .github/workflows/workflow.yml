@@ -40,7 +40,7 @@ jobs:
             patch=0
             minor=$((minor + 1))
           fi
-          if [ "$minor" -ge 10]; then
+          if [ "$minor" -ge 10 ]; then
             minor=0
             major=$((major + 1))
           fi
@@ -58,11 +58,14 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/GoLogann/phishing-quest-api.git
           git push origin main --tags
 
+          # Expor a nova versão como uma saída para outros passos usarem
+          echo "::set-output name=new_version::$NEW_VERSION"
+
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Build Docker image
-        run: docker build -t loganncardoso/phishing-quest:$NEW_VERSION .
+        run: docker build -t loganncardoso/phishing-quest:${{ steps.bump_version.outputs.new_version }} .
 
       - name: Push Docker image to Docker Hub
-        run: docker push loganncardoso/phishing-quest:$NEW_VERSION
+        run: docker push loganncardoso/phishing-quest:${{ steps.bump_version.outputs.new_version }}
