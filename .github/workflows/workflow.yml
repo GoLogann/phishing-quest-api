@@ -46,10 +46,10 @@ jobs:
           echo "New version: $NEW_VERSION"
           echo $NEW_VERSION > VERSION
           
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
+          git config user.name "Gologann"
+          git config user.email "logan.cc@outlook.com"
           git add VERSION
-          git commit -m "Bump version to $NEW_VERSION"
+          git commit -m "fix: Bump version to $NEW_VERSION"
           git tag -a "$NEW_VERSION" -m "Version $NEW_VERSION"
           git push origin main --tags
 
