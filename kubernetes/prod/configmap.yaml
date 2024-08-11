@@ -8,7 +8,7 @@ data:
   config.yaml: |
     app:
       name: LabSC - Phishing Quest
-      version: @SED_VERSION
+      version: v0.0.3
     logger:
       level: info
       encoding: console #console or json
@@ -20,4 +20,4 @@ data:
       type: postgres
       showsql: false
       schema: capital
-      connectionstring: "host=phishing-quest.cxyy0wwccs4r.sa-east-1.rds.amazonaws.com user=@DB_USERNAME password=@DB_PASSWORD dbname=phishingquest port=5432"
+      connectionstring: "host=phishing-quest.cxyy0wwccs4r.sa-east-1.rds.amazonaws.com user=labsc password=phishingquest2024 dbname=postgres port=5432 sslmode=require TimeZone=UTC connect_timeout=10"

@@ -18,7 +18,7 @@ spec:
       containers:
         - name: phishing-quest
           imagePullPolicy: Always
-          image: loganncardoso/phishing-quest:@SED_VERSION
+          image: loganncardoso/phishing-quest:0.0.3
           resources:
             requests:
               memory: "100Mi"
