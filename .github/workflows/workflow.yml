@@ -2,9 +2,6 @@ name: Continuous Integration
 run-name: ${{ github.actor }} is running CI for Phishing Quest API 🛡️
 
 on:
-  pull_request:
-    branches:
-      - 'main'
   push:
     branches:
       - 'main'
@@ -14,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -28,11 +25,39 @@ jobs:
           go mod tidy
           go test ./tests -v
 
+      - name: Bump version and push tag
+        id: bump_version
+        run: |
+          VERSION=$(cat VERSION)
+          echo "Current version: $VERSION"
+          
+          IFS='.' read -r major minor patch <<< "$VERSION"
+          patch=$((patch + 1))
+          if [ "$patch" -ge 10 ]; then
+            patch=0
+            minor=$((minor + 1))
+          fi
+          if [ "$minor" -ge 10 ]; then
+            minor=0
+            major=$((major + 1))
+          fi
+          
+          NEW_VERSION="$major.$minor.$patch"
+          echo "New version: $NEW_VERSION"
+          echo $NEW_VERSION > VERSION
+          
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add VERSION
+          git commit -m "Bump version to $NEW_VERSION"
+          git tag -a "$NEW_VERSION" -m "Version $NEW_VERSION"
+          git push origin main --tags
+
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-      
+
       - name: Build Docker image
-        run: docker build -t loganncardoso/phishing-quest:${{ github.sha }} .
+        run: docker build -t loganncardoso/phishing-quest:${{ steps.bump_version.outputs.new_version }} .
 
       - name: Push Docker image to Docker Hub
-        run: docker push loganncardoso/phishing-quest:${{ github.sha }}
+        run: docker push loganncardoso/phishing-quest:${{ steps.bump_version.outputs.new_version }}
