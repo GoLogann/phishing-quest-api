@@ -46,7 +46,7 @@ jobs:
           echo "New version: $NEW_VERSION"
           echo $NEW_VERSION > VERSION
           
-          git config user.name "Gologann"
+          git config user.name "GoLogann"
           git config user.email "logan.cc@outlook.com"
           git add VERSION
           git commit -m "fix: Bump version to $NEW_VERSION"
