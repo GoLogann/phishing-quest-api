@@ -20,4 +20,4 @@ data:
       type: postgres
       showsql: false
       schema: capital
-      connectionstring: "host=phishingquest-db.cm90sapdvq98.sa-east-1.rds.amazonaws.com user=@DB_USERNAME password=@DB_PASSWORD dbname=phishingquest port=5432"
+      connectionstring: "host=phishing-quest.cxyy0wwccs4r.sa-east-1.rds.amazonaws.com user=@DB_USERNAME password=@DB_PASSWORD dbname=phishingquest port=5432"
