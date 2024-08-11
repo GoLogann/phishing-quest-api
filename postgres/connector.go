@@ -19,10 +19,15 @@ func InitDB() *gorm.DB {
 
 	logrus.Info("Connecting to PostgreSQL...")
 
-	dsn := "host=localhost user=labsc password=phishingquest dbname=phishing_quest port=5432 sslmode=disable search_path=phishing_quest"
+	dsn := "host=phishing-quest.cxyy0wwccs4r.sa-east-1.rds.amazonaws.com user=labsc password=phishingquest2024 dbname=postgres port=5432 sslmode=require TimeZone=UTC connect_timeout=10"
+
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		logrus.WithError(err).Fatal("Failed to connect to database")
+		logrus.WithFields(logrus.Fields{
+			"host":     "phishing-quest.cxyy0wwccs4r.sa-east-1.rds.amazonaws.com",
+			"user":     "labsc",
+			"database": "phishingquest2024",
+		}).WithError(err).Fatal("Failed to connect to database")
 	}
 
 	logrus.Info("Database connected successfully")
