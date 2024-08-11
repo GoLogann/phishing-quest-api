@@ -1,9 +1,10 @@
 package domain
 
 import (
+	"time"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
-	"time"
 )
 
 type User struct {
@@ -13,8 +14,8 @@ type User struct {
 	Password     string    `json:"password" validate:"required" gorm:"-"`
 	PasswordHash string    `json:"-" validate:"required,min=1,max=255"`
 	TotalScore   int       `json:"totalScore" validate:"gte=0"`
-	CreatedAt    time.Time `json:"createdAt"`
-	UpdatedAt    time.Time `json:"updatedAt"`
+	CreatedAt    time.Time `json:"-"`
+	UpdatedAt    time.Time `json:"-"`
 }
 
 func (u *User) TableName() string {
