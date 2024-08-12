@@ -19,5 +19,5 @@ data:
       enabled: true
       type: postgres
       showsql: false
-      schema: capital
+      schema: phishing_quest
       connectionstring: "host=phishing-quest.cxyy0wwccs4r.sa-east-1.rds.amazonaws.com user=labsc password=phishingquest2024 dbname=postgres port=5432 sslmode=require TimeZone=UTC connect_timeout=10"

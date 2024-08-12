@@ -1,0 +1,47 @@
+name: CD
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggered by version tags like v1.0.0
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: sa-east-1
+
+      - name: Set up EKS kubeconfig
+        run: |
+          aws eks update-kubeconfig --name your-cluster-name --region sa-east-1
+
+      - name: Set up Flyway
+        run: |
+          curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/9.0.4/flyway-commandline-9.0.4-linux-x64.tar.gz | tar xvz
+          sudo ln -s `pwd`/flyway-9.0.4/flyway /usr/local/bin
+
+      - name: Run Flyway migrations
+        run: |
+          flyway -url=jdbc:postgresql://phishing_quest-db.cm90sapdvq98.sa-east-1.rds.amazonaws.com:5432/phishing_quest \
+                 -user=${{ secrets.DB_USERNAME }} \
+                 -password=${{ secrets.DB_PASSWORD }} \
+                 -schemas=phishing_quest \
+                 -locations=filesystem:migrate/br/changelogs \
+                 migrate
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ github.ref_name }} --record
