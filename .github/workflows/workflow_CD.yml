@@ -1,8 +1,9 @@
 name: CD
+
 on:
   push:
     tags:
-      - 'v*.*.*'  # Triggered by version tags like v1.0.0
+      - 'v*.*.*'
 
 jobs:
   deploy:
@@ -28,20 +29,24 @@ jobs:
         run: |
           aws eks update-kubeconfig --name your-cluster-name --region sa-east-1
 
-      - name: Set up Flyway
-        run: |
-          curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/9.0.4/flyway-commandline-9.0.4-linux-x64.tar.gz | tar xvz
-          sudo ln -s `pwd`/flyway-9.0.4/flyway /usr/local/bin
-
       - name: Run Flyway migrations
         run: |
-          flyway -url=jdbc:postgresql://phishing_quest-db.cm90sapdvq98.sa-east-1.rds.amazonaws.com:5432/phishing_quest \
-                 -user=${{ secrets.DB_USERNAME }} \
-                 -password=${{ secrets.DB_PASSWORD }} \
-                 -schemas=phishing_quest \
-                 -locations=filesystem:migrate/br/changelogs \
-                 migrate
+          docker run --rm \
+            -v ${{ github.workspace }}/migrate/changelogs:/flyway/sql \
+            -v ${{ github.workspace }}/migrate/flyway.config:/flyway/conf/flyway.config \
+            flyway/flyway:6.3.1 \
+            -configFiles=/flyway/conf/flyway.config -locations=filesystem:/flyway/sql -connectRetries=60 migrate
 
-      - name: Deploy to Kubernetes
+      - name: Deploy ConfigMap to Kubernetes
+        run: kubectl apply -f ./kubernetes/configmap.yaml
+
+      - name: Deploy Service to Kubernetes
+        run: kubectl apply -f ./kubernetes/service.yaml
+
+      - name: Deploy Ingress to Kubernetes
+        run: kubectl apply -f ./kubernetes/ingress.yaml
+
+      - name: Deploy Application to Kubernetes
         run: |
           kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ github.ref_name }} --record
+          kubectl apply -f ./kubernetes/deployment.yaml
