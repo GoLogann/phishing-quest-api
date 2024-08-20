@@ -1,0 +1,45 @@
+# Diretórios e arquivos de build
+/bin/
+/build/
+/out/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Diretório de cache do Go
+/pkg/
+
+# Diretório de dependências do Go modules
+/vendor/
+
+# Arquivos de editor de texto/IDE
+*.swp
+*~
+.idea/
+.vscode/
+*.iml
+
+# Arquivos de logs e depuração
+*.log
+
+# Arquivos de configuração local
+.env
+.env.*
+
+# Arquivos binários gerados
+*.o
+*.a
+
+# Arquivos de teste de cobertura
+*.cover
+
+# Módulos baixados em Go 1.11+
+/go.sum
+/go.mod
+
+# Diretório de cache do Go
+/go-cache/
+
+
