@@ -1,0 +1,52 @@
+name: CD
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: sa-east-1
+
+      - name: Set up EKS kubeconfig
+        run: |
+          aws eks update-kubeconfig --name your-cluster-name --region sa-east-1
+
+      - name: Run Flyway migrations
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/migrate/changelogs:/flyway/sql \
+            -v ${{ github.workspace }}/migrate/flyway.config:/flyway/conf/flyway.config \
+            flyway/flyway:6.3.1 \
+            -configFiles=/flyway/conf/flyway.config -locations=filesystem:/flyway/sql -connectRetries=60 migrate
+
+      - name: Deploy ConfigMap to Kubernetes
+        run: kubectl apply -f ./kubernetes/configmap.yaml
+
+      - name: Deploy Service to Kubernetes
+        run: kubectl apply -f ./kubernetes/service.yaml
+
+      - name: Deploy Ingress to Kubernetes
+        run: kubectl apply -f ./kubernetes/ingress.yaml
+
+      - name: Deploy Application to Kubernetes
+        run: |
+          kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ github.ref_name }} --record
+          kubectl apply -f ./kubernetes/deployment.yaml
