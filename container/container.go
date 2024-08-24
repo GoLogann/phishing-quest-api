@@ -17,7 +17,7 @@ type Container struct {
 
 func NewContainer() *Container {
 	db := postgres.InitDB()
-
+	
 	userRepo := repository.NewUserRepository(db)
 
 	userUseCase := usecase.NewUserUseCase(userRepo)

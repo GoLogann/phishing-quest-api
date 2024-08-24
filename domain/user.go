@@ -25,3 +25,4 @@ func (u *User) Validate() error {
 	validate := validator.New()
 	return validate.Struct(u)
 }
+

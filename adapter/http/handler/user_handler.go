@@ -1,11 +1,12 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"phishing-quest/core/usecase"
 	"phishing-quest/domain"
 	"phishing-quest/dto"
+
+	"github.com/gin-gonic/gin"
 )
 
 type UserHandler struct {
@@ -42,12 +43,14 @@ func (uh *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := uh.UserUseCase.Login(userLoginDTO)
+	user, token, err := uh.UserUseCase.Login(userLoginDTO)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	c.Header("Authorization", token)
+	
 	c.JSON(http.StatusOK, user)
 }
 

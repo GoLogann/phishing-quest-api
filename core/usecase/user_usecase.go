@@ -56,17 +56,22 @@ func (uc *UserUseCase) CreateUser(userRequest *domain.User) (*domain.User, error
 	return user, nil
 }
 
-func (uc *UserUseCase) Login(userRequest *dto.UserLoginDTO) (*domain.User, error) {
+func (uc *UserUseCase) Login(userRequest *dto.UserLoginDTO) (*domain.User, string, error) {
 	user, err := uc.userRepo.GetByEmail(userRequest.Email)
 	if err != nil {
-		return nil, errors.New("usuário não encontrado")
+		return nil, "", errors.New("usuário não encontrado")
 	}
 
 	if !uc.CheckPasswordHash(userRequest.Password, user.PasswordHash) {
-		return nil, errors.New("senha incorreta")
+		return nil, "", errors.New("senha incorreta")
 	}
 
-	return user, nil
+	token, err := user.GenerateToken()
+	if err != nil {
+		return nil, "", err
+	}
+
+	return user, token, nil
 }
 
 func (uc *UserUseCase) UpdatePassword(user *domain.User, newPasswordHash string) {
