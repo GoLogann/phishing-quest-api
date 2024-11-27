@@ -1,0 +1,10 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: phishing-quest-cert
+spec:
+  dnsNames:
+    - phishing-quest.labsc.tech
+  secretName: phishing-quest-tls
+  issuerRef:
+    name: selfsigned-issuer
