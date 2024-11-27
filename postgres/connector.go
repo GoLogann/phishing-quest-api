@@ -1,11 +1,11 @@
 package postgres
 
 import (
-	"os"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"os"
 )
 
 var DB *gorm.DB
