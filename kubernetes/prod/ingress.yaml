@@ -15,3 +15,7 @@ spec:
                 name: phishing-quest-service
                 port:
                   number: 80
+  tls:
+    - hosts:
+        - phishing-quest.labsc.tech
+      secretName: phishing-quest-tls
