@@ -1,0 +1,58 @@
+name: Versioning and Tagging
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Type of version bump: major, minor, or patch'
+        required: true
+        default: 'patch'
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Bump version and create tag
+        id: bump_version
+        run: |
+          version_type="${{ github.event.inputs.version_type }}"
+          current_version=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "v0.0.0")
+          echo "Current version: $current_version"
+
+          current_version="${current_version#v}"
+          IFS='.' read -r major minor patch <<< "$current_version"
+
+          case "$version_type" in
+            major)
+              major=$((major + 1))
+              minor=0
+              patch=0
+              ;;
+            minor)
+              minor=$((minor + 1))
+              patch=0
+              ;;
+            patch)
+              patch=$((patch + 1))
+              ;;
+            *)
+              echo "Invalid version type: $version_type"
+              exit 1
+              ;;
+          esac
+
+          new_version="v$major.$minor.$patch"
+          echo "New version: $new_version"
+
+          if git rev-parse "$new_version" >/dev/null 2>&1; then
+            echo "Tag $new_version already exists."
+            exit 1
+          fi
+
+          git tag -a "$new_version" -m "Version $new_version"
+          git push origin "$new_version"
+
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT

@@ -1,0 +1,46 @@
+name: CD
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Configure kubeconfig
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Deploy PVC for Postgres
+        run: kubectl apply -f ./kubernetes/prod/postgres-pvc.yaml
+
+      - name: Deploy Postgres Database
+        run: |
+          kubectl apply -f ./kubernetes/prod/postgres-deployment.yaml
+          kubectl apply -f ./kubernetes/prod/postgres-service.yaml
+
+      - name: Deploy ConfigMap to Kubernetes
+        run: kubectl apply -f ./kubernetes/prod/configmap.yaml
+
+      - name: Deploy Application to Kubernetes
+        run: |
+          kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ github.ref_name }} --record
+          kubectl apply -f ./kubernetes/prod/deployment.yaml
+          kubectl apply -f ./kubernetes/prod/service.yaml
+          kubectl apply -f ./kubernetes/prod/ingress.yaml
+
+      - name: Wait for application rollout
+        run: |
+          kubectl rollout status deployment/phishing-quest-deployment
