@@ -1,5 +1,4 @@
 name: Continuous Integration
-run-name: ${{ github.actor }} is running CI for Phishing Quest API 🛡️
 
 on:
   push:
@@ -10,10 +9,11 @@ permissions:
   contents: write
 
 jobs:
-  continuous-integration:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -34,40 +34,44 @@ jobs:
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Build Docker image
-        run: docker build --cache-from=loganncardoso/phishing-quest:latest -t loganncardoso/phishing-quest:${{ github.sha }} .
+        run: docker build -t loganncardoso/phishing-quest:latest .
 
       - name: Push Docker image to Docker Hub
-        run: docker push loganncardoso/phishing-quest:${{ github.sha }}
+        run: docker push loganncardoso/phishing-quest:latest
 
-      - name: Bump version and push tag
-        id: bump_version
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Configure kubeconfig
         run: |
-          VERSION=$(cat VERSION)
-          echo "Current version: $VERSION"
-          
-          IFS='.' read -r major minor patch <<< "$VERSION"
-          patch=$((patch + 1))
-          if [ "$patch" -ge 10 ]; then
-            patch=0
-            minor=$((minor + 1))
-          fi
-          if [ "$minor" -ge 10 ]; then
-            minor=0
-            major=$((major + 1))
-          fi
-          
-          NEW_VERSION="$major.$minor.$patch"
-          echo "New version: $NEW_VERSION"
-          echo $NEW_VERSION > VERSION
-          
-          git config user.name "GoLogann"
-          git config user.email "logan.cc@outlook.com"
-          git add VERSION
-          git commit -m "fix: Bump version to $NEW_VERSION"
-          git tag -a "$NEW_VERSION" -m "Version $NEW_VERSION"
-          
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/GoLogann/phishing-quest-api.git
-          git push origin main --tags
+          echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
 
-          # Usando GITHUB_OUTPUT para expor o NEW_VERSION
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+      - name: Deploy PVC for Postgres
+        run: kubectl apply -f ./kubernetes/prod/postgres-pvc.yaml
+
+      - name: Deploy Postgres Database
+        run: |
+          kubectl apply -f ./kubernetes/prod/postgres-deployment.yaml
+          kubectl apply -f ./kubernetes/prod/postgres-service.yaml
+          kubectl rollout status deployment/phishing-quest-postgresql
+
+      - name: Apply Kubernetes configurations
+        run: |
+          kubectl apply -f ./kubernetes/prod/configmap.yaml
+          kubectl apply -f ./kubernetes/prod/deployment.yaml
+          kubectl apply -f ./kubernetes/prod/service.yaml
+          kubectl apply -f ./kubernetes/prod/ingress.yaml
+
+      - name: Wait for application rollout
+        run: |
+          kubectl rollout status deployment/phishing-quest-deployment
+
+      - name: Run Flyway migrations
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/migrate/changelogs:/flyway/sql \
+            -v ${{ github.workspace }}/migrate/flyway.conf:/flyway/conf/flyway.conf \
+            flyway/flyway:6.3.1 migrate
