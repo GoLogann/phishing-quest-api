@@ -46,27 +46,13 @@ jobs:
 
       - name: Configure kubeconfig
         run: |
+          mkdir -p $HOME/.kube
           echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
-      - name: Deploy PVC for Postgres
-        run: kubectl apply -f ./kubernetes/prod/postgres-pvc.yaml
-
-      - name: Deploy Postgres Database
+      - name: Deploy Kubernetes resources
         run: |
-          kubectl apply -f ./kubernetes/prod/postgres-deployment.yaml
-          kubectl apply -f ./kubernetes/prod/postgres-service.yaml
-          kubectl rollout status deployment/phishing-quest-postgresql
-
-      - name: Apply Kubernetes configurations
-        run: |
-          kubectl apply -f ./kubernetes/prod/configmap.yaml
-          kubectl apply -f ./kubernetes/prod/deployment.yaml
-          kubectl apply -f ./kubernetes/prod/service.yaml
-          kubectl apply -f ./kubernetes/prod/ingress.yaml
-
-      - name: Wait for application rollout
-        run: |
+          kubectl apply -f ./kubernetes/prod/ --recursive
           kubectl rollout status deployment/phishing-quest-deployment
 
       - name: Run Flyway migrations
