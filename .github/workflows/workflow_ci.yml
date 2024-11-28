@@ -48,7 +48,9 @@ jobs:
             New-Item -ItemType Directory -Force -Path "$HOME\.kube"
           }
           echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
+          $acl = Get-Acl $HOME\.kube\config
+          $acl.SetAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone", "FullControl", "Allow")))
+          Set-Acl $HOME\.kube\config $acl
 
       - name: Test Kubernetes connection
         run: kubectl get nodes
