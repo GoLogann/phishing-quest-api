@@ -65,7 +65,7 @@ jobs:
       - name: Deploy Kubernetes resources
         run: |
           kubectl apply -f ./kubernetes/prod/ --recursive
-          kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ env.IMAGE_TAG }} --record
+          kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ env.IMAGE_TAG }}
           kubectl rollout status deployment/phishing-quest-deployment || exit 0
 
       - name: Verify migrate directory contents
