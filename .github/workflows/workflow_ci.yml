@@ -11,6 +11,8 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: self-hosted
+    env:
+      IMAGE_TAG: ${{ github.sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,9 +32,6 @@ jobs:
       - name: Run tests
         run: go test ./tests -v
 
-      - name: Define IMAGE_TAG
-        run: echo "IMAGE_TAG=latest" >> $GITHUB_ENV
-
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
@@ -43,21 +42,22 @@ jobs:
         run: docker push loganncardoso/phishing-quest:${{ env.IMAGE_TAG }}
 
       - name: Set up kubectl
-        run: choco install kubernetes-cli --version=1.27.0 -y
+        run: choco install kubernetes-cli -y
 
       - name: Configure kubeconfig
         run: |
           if (!(Test-Path -Path "$HOME\.kube")) {
             New-Item -ItemType Directory -Force -Path "$HOME\.kube"
           }
-          echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+          $KubeConfigContent = "${{ secrets.KUBE_CONFIG }}"
+          $KubeConfigContent | Out-File -FilePath "$HOME\.kube\config" -Encoding ascii
 
           # Ajustar permissões no Windows
           $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-          $acl = Get-Acl $HOME\.kube\config
+          $acl = Get-Acl "$HOME\.kube\config"
           $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($currentUser, "FullControl", "Allow")
           $acl.SetAccessRule($accessRule)
-          Set-Acl $HOME\.kube\config $acl
+          Set-Acl "$HOME\.kube\config" $acl
 
       - name: Test Kubernetes connection
         run: kubectl get nodes
@@ -66,7 +66,7 @@ jobs:
         run: |
           kubectl apply -f ./kubernetes/prod/ --recursive
           kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ env.IMAGE_TAG }} --record
-          kubectl rollout status deployment/phishing-quest-deployment || true
+          kubectl rollout status deployment/phishing-quest-deployment || exit 0
 
       - name: Run Flyway migrations
         run: |
