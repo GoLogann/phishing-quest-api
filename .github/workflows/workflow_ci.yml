@@ -48,8 +48,18 @@ jobs:
             New-Item -ItemType Directory -Force -Path "$HOME\.kube"
           }
           echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+          
+          # Obter o usuário atual
+          $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+          
+          # Obter as permissões atuais
           $acl = Get-Acl $HOME\.kube\config
-          $acl.SetAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone", "FullControl", "Allow")))
+          
+          # Criar uma nova regra de acesso para o usuário atual
+          $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($currentUser, "FullControl", "Allow")
+          $acl.SetAccessRule($accessRule)
+          
+          # Aplicar as permissões ao arquivo
           Set-Acl $HOME\.kube\config $acl
 
       - name: Test Kubernetes connection
