@@ -11,11 +11,13 @@ permissions:
 jobs:
   deploy:
     runs-on: self-hosted
-    env:
-      IMAGE_TAG: ${{ github.ref_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Get Commit SHA for Tag
+        id: get_sha
+        run: echo "IMAGE_TAG=$(git rev-list -n 1 ${{ github.ref_name }})" >> $GITHUB_ENV
 
       - name: Set up kubectl
         run: |
