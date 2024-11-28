@@ -27,26 +27,26 @@ spec:
               cpu: "200m"
           env:
             - name: DB_HOST
-              value: "phishing-quest-postgresql"
+              value: "phishing-quest-postgresql"  # Service name for PostgreSQL
             - name: DB_PORT
-              value: "5432"
+              value: "5432"  # Default PostgreSQL port
             - name: DB_NAME
-              value: "phishing_quest"
+              value: "phishing_quest"  # Database name
             - name: DB_SSLMODE
-              value: "disable"
+              value: "disable"  # Adjust if SSL is required
             - name: DB_TIMEZONE
-              value: "UTC"
+              value: "UTC"  # Database timezone
             - name: DB_CONNECT_TIMEOUT
-              value: "5"
+              value: "5"  # Connection timeout
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
                   name: phishing-quest-db-secret
-                  key: DB_USER
+                  key: DB_USER  # Ensure this key exists in the secret
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: phishing-quest-db-secret
-                  key: DB_PASSWORD
+                  key: DB_PASSWORD  # Ensure this key exists in the secret
           ports:
-            - containerPort: 8080
+            - containerPort: 8080  # Port where your application listens

@@ -2,6 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: phishing-quest-postgresql
+  labels:
+    app: phishing-quest-postgresql
 spec:
   selector:
     app: phishing-quest-postgresql
