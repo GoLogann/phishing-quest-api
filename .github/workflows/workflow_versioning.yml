@@ -1,59 +1,48 @@
-name: Versioning and Tagging
+steps:
+  - name: Bump version and create tag
+    id: bump_version
+    shell: pwsh
+    run: |
+      $versionType = "${{ github.event.inputs.version_type }}"
+      $currentVersion = (git describe --tags $(git rev-list --tags --max-count=1) 2>$null) -replace 'v', ''
+      if (-not $currentVersion) {
+        $currentVersion = "0.0.0"
+      }
+      Write-Host "Current version: $currentVersion"
 
-on:
-  workflow_dispatch:
-    inputs:
-      version_type:
-        description: 'Type of version bump: major, minor, or patch'
-        required: true
-        default: 'patch'
+      $versionParts = $currentVersion -split '\.'
+      $major = [int]$versionParts[0]
+      $minor = [int]$versionParts[1]
+      $patch = [int]$versionParts[2]
 
-jobs:
-  bump-version:
-    runs-on: self-hosted
+      switch ($versionType) {
+        "major" {
+          $major++
+          $minor = 0
+          $patch = 0
+        }
+        "minor" {
+          $minor++
+          $patch = 0
+        }
+        "patch" {
+          $patch++
+        }
+        default {
+          Write-Error "Invalid version type: $versionType"
+          exit 1
+        }
+      }
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      $newVersion = "v$major.$minor.$patch"
+      Write-Host "New version: $newVersion"
 
-      - name: Bump version and create tag
-        id: bump_version
-        run: |
-          version_type="${{ github.event.inputs.version_type }}"
-          current_version=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "v0.0.0")
-          echo "Current version: $current_version"
+      if (git rev-parse $newVersion 2>$null) {
+        Write-Error "Tag $newVersion already exists."
+        exit 1
+      }
 
-          current_version="${current_version#v}"
-          IFS='.' read -r major minor patch <<< "$current_version"
+      git tag -a $newVersion -m "Version $newVersion"
+      git push origin $newVersion
 
-          case "$version_type" in
-            major)
-              major=$((major + 1))
-              minor=0
-              patch=0
-              ;;
-            minor)
-              minor=$((minor + 1))
-              patch=0
-              ;;
-            patch)
-              patch=$((patch + 1))
-              ;;
-            *)
-              echo "Invalid version type: $version_type"
-              exit 1
-              ;;
-          esac
-
-          new_version="v$major.$minor.$patch"
-          echo "New version: $new_version"
-
-          if git rev-parse "$new_version" >/dev/null 2>&1; then
-            echo "Tag $new_version already exists."
-            exit 1
-          fi
-
-          git tag -a "$new_version" -m "Version $new_version"
-          git push origin "$new_version"
-
-          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+      echo "new_version=$newVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
