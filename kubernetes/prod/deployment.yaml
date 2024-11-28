@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: phishing-quest
-          image: loganncardoso/phishing-quest:${IMAGE_TAG}
+          image: loganncardoso/phishing-quest:latest
           imagePullPolicy: Always
           resources:
             requests:
@@ -26,6 +26,18 @@ spec:
               memory: "500Mi"
               cpu: "200m"
           env:
+            - name: DB_HOST
+              value: "phishing-quest-postgresql"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: "phishing_quest"
+            - name: DB_SSLMODE
+              value: "disable"
+            - name: DB_TIMEZONE
+              value: "UTC"
+            - name: DB_CONNECT_TIMEOUT
+              value: "5"
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
@@ -36,18 +48,5 @@ spec:
                 secretKeyRef:
                   name: phishing-quest-db-secret
                   key: DB_PASSWORD
-          envFrom:
-            - configMapRef:
-                name: phishing-quest-config
           ports:
             - containerPort: 8080
-          volumeMounts:
-            - name: config-vol
-              mountPath: /app/config.yaml
-              subPath: config.yaml
-              readOnly: true
-      volumes:
-        - name: config-vol
-          configMap:
-            name: phishing-quest-config
-            optional: true

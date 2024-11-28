@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -10,14 +9,8 @@ import (
 
 var DB *gorm.DB
 
-// InitDB inicializa a conexão com o banco de dados e retorna uma instância de *gorm.DB
 func InitDB() *gorm.DB {
 	var err error
-
-	err = godotenv.Load()
-	if err != nil {
-		logrus.Fatal("Error loading .env file")
-	}
 
 	logrus.SetLevel(logrus.InfoLevel)
 	logrus.SetFormatter(&logrus.TextFormatter{
@@ -26,14 +19,14 @@ func InitDB() *gorm.DB {
 
 	logrus.Info("Connecting to PostgreSQL...")
 
-	dsn := "host=" + os.Getenv("DB_HOST") +
-		" user=" + os.Getenv("DB_USER") +
-		" password=" + os.Getenv("DB_PASSWORD") +
-		" dbname=" + os.Getenv("DB_NAME") +
-		" port=" + os.Getenv("DB_PORT") +
-		" sslmode=" + os.Getenv("DB_SSLMODE") +
-		" TimeZone=" + os.Getenv("DB_TIMEZONE") +
-		" connect_timeout=" + os.Getenv("DB_CONNECT_TIMEOUT")
+	dsn := "host=" + getEnv("DB_HOST", "phishing-quest-postgresql") +
+		" user=" + getEnv("DB_USER", "default_user") +
+		" password=" + getEnv("DB_PASSWORD", "default_password") +
+		" dbname=" + getEnv("DB_NAME", "phishing_quest") +
+		" port=" + getEnv("DB_PORT", "5432") +
+		" sslmode=" + getEnv("DB_SSLMODE", "disable") +
+		" TimeZone=" + getEnv("DB_TIMEZONE", "UTC") +
+		" connect_timeout=" + getEnv("DB_CONNECT_TIMEOUT", "5")
 
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -46,4 +39,11 @@ func InitDB() *gorm.DB {
 
 	logrus.Info("Database connected successfully")
 	return DB
+}
+
+func getEnv(key, defaultValue string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+	return defaultValue
 }
