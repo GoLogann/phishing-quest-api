@@ -44,7 +44,9 @@ jobs:
 
       - name: Configure kubeconfig
         run: |
-          mkdir -p $HOME/.kube
+          if (!(Test-Path -Path "$HOME\.kube")) {
+            New-Item -ItemType Directory -Force -Path "$HOME\.kube"
+          }
           echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
