@@ -11,28 +11,30 @@ permissions:
 jobs:
   deploy:
     runs-on: self-hosted
+    env:
+      IMAGE_TAG: ${{ github.ref_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Get Commit SHA for Tag
-        id: get_sha
-        run: echo "IMAGE_TAG=$(git rev-list -n 1 ${{ github.ref_name }})" >> $GITHUB_ENV
-
       - name: Set up kubectl
         run: |
-          if (!(Test-Path -Path "$HOME\.kube")) {
-            New-Item -ItemType Directory -Force -Path "$HOME\.kube"
-          }
-          $KubeConfigContent = "${{ secrets.KUBE_CONFIG }}"
-          $KubeConfigContent | Out-File -FilePath "$HOME\.kube\config" -Encoding ascii
-
-          # Ajustar permissões no Windows
-          $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-          $acl = Get-Acl "$HOME\.kube\config"
-          $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($currentUser, "FullControl", "Allow")
-          $acl.SetAccessRule($accessRule)
-          Set-Acl "$HOME\.kube\config" $acl
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            # Instalação para Windows
+            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+            Invoke-WebRequest -Uri "https://dl.k8s.io/release/v1.28.0/bin/windows/amd64/kubectl.exe" -OutFile "$env:USERPROFILE\kubectl.exe"
+            $env:Path += ";$env:USERPROFILE"
+          elif [[ "$RUNNER_OS" == "Linux" ]]; then
+            # Instalação para Linux
+            curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl"
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            # Instalação para macOS
+            curl -LO "https://dl.k8s.io/release/v1.28.0/bin/darwin/amd64/kubectl"
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+          fi
 
       - name: Test Kubernetes connection
         run: kubectl get nodes
@@ -40,5 +42,5 @@ jobs:
       - name: Deploy Kubernetes resources
         run: |
           kubectl apply -f ./kubernetes/prod/ --recursive
-          kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ env.IMAGE_TAG }}
+          kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ env.IMAGE_TAG }} --record
           kubectl rollout status deployment/phishing-quest-deployment

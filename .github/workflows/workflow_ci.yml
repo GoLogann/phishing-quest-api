@@ -42,7 +42,23 @@ jobs:
         run: docker push loganncardoso/phishing-quest:${{ env.IMAGE_TAG }}
 
       - name: Set up kubectl
-        run: choco install kubernetes-cli -y
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            # Instalação para Windows
+            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+            Invoke-WebRequest -Uri "https://dl.k8s.io/release/v1.28.0/bin/windows/amd64/kubectl.exe" -OutFile "$env:USERPROFILE\kubectl.exe"
+            $env:Path += ";$env:USERPROFILE"
+          elif [[ "$RUNNER_OS" == "Linux" ]]; then
+            # Instalação para Linux
+            curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl"
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            # Instalação para macOS
+            curl -LO "https://dl.k8s.io/release/v1.28.0/bin/darwin/amd64/kubectl"
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+          fi
 
       - name: Configure kubeconfig
         run: |
