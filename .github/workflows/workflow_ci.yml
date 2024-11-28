@@ -73,11 +73,3 @@ jobs:
           echo "Listing contents of migrate directory:"
           Get-ChildItem -Path "${{ github.workspace }}/migrate" -Recurse
         shell: pwsh
-
-      - name: Run Flyway migrations
-        run: |
-          docker run --rm `
-            -v "${{ github.workspace }}/migrate/changelogs:/flyway/sql" `
-            -v "${{ github.workspace }}/migrate/flyway.config:/flyway/conf/flyway.config" `
-            flyway/flyway:6.3.1 migrate
-        shell: pwsh
