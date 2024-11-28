@@ -68,10 +68,16 @@ jobs:
           kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ env.IMAGE_TAG }} --record
           kubectl rollout status deployment/phishing-quest-deployment || exit 0
 
+      - name: Verify migrate directory contents
+        run: |
+          echo "Listing contents of migrate directory:"
+          Get-ChildItem -Path "${{ github.workspace }}/migrate" -Recurse
+        shell: pwsh
+
       - name: Run Flyway migrations
         run: |
           docker run --rm `
-            -v "${{ github.workspace }}\migrate\changelogs:/flyway/sql" `
-            -v "${{ github.workspace }}\migrate\flyway.conf:/flyway/conf/flyway.conf" `
+            -v "${{ github.workspace }}/migrate/changelogs:/flyway/sql" `
+            -v "${{ github.workspace }}/migrate/flyway.config:/flyway/conf/flyway.config" `
             flyway/flyway:6.3.1 migrate
         shell: pwsh
