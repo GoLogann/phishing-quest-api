@@ -1,4 +1,4 @@
-name: CD
+name: Continuous Deployment
 
 on:
   push:
@@ -7,19 +7,18 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'latest'
+        run: choco install kubernetes-cli -y
 
       - name: Configure kubeconfig
         run: |
+          mkdir -p $HOME/.kube
           echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
@@ -42,5 +41,4 @@ jobs:
           kubectl apply -f ./kubernetes/prod/ingress.yaml
 
       - name: Wait for application rollout
-        run: |
-          kubectl rollout status deployment/phishing-quest-deployment
+        run: kubectl rollout status deployment/phishing-quest-deployment
