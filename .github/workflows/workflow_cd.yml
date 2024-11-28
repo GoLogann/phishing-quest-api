@@ -18,9 +18,11 @@ jobs:
 
       - name: Configure kubeconfig
         run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
+          if (!(Test-Path -Path "$HOME\.kube")) {
+            New-Item -ItemType Directory -Force -Path "$HOME\.kube"
+          }
+          "${{ secrets.KUBE_CONFIG }}" | Out-File -FilePath "$HOME\.kube\config" -Encoding ascii
+          icacls "$HOME\.kube\config" /inheritance:r /grant:r "$($env:USERNAME):F"
 
       - name: Deploy PVC for Postgres
         run: kubectl apply -f ./kubernetes/prod/postgres-pvc.yaml
