@@ -1,48 +1,48 @@
-name: Continuous Deployment
-
-on:
-  push:
-    tags:
-      - 'v*.*.*'
-
-permissions:
-  contents: write
-
-jobs:
-  deploy:
-    runs-on: self-hosted
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Get Commit SHA for Tag
-        id: get_sha
-        run: echo "IMAGE_TAG=$(git rev-list -n 1 ${{ github.ref_name }})" >> $GITHUB_ENV
-
-      - name: Set up kubectl
-        run: |
-          if ($env:RUNNER_OS -eq "Windows") {
-            # Instalação no Windows
-            Invoke-WebRequest -Uri "https://dl.k8s.io/release/v1.28.0/bin/windows/amd64/kubectl.exe" -OutFile "$env:USERPROFILE\kubectl.exe"
-            [Environment]::SetEnvironmentVariable("Path", "$env:Path;$env:USERPROFILE", [EnvironmentVariableTarget]::Process)
-          } elseif ($env:RUNNER_OS -eq "Linux") {
-            # Instalação no Linux
-            curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl"
-            chmod +x ./kubectl
-            sudo mv ./kubectl /usr/local/bin/kubectl
-          } elseif ($env:RUNNER_OS -eq "macOS") {
-            # Instalação no macOS
-            curl -LO "https://dl.k8s.io/release/v1.28.0/bin/darwin/amd64/kubectl"
-            chmod +x ./kubectl
-            sudo mv ./kubectl /usr/local/bin/kubectl
-          }
-        shell: pwsh
-
-      - name: Test Kubernetes connection
-        run: kubectl get nodes
-
-      - name: Deploy Kubernetes resources
-        run: |
-          kubectl apply -f ./kubernetes/prod/ --recursive
-          kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ env.IMAGE_TAG }} --record
-          kubectl rollout status deployment/phishing-quest-deployment
+#name: Continuous Deployment
+#
+#on:
+#  push:
+#    tags:
+#      - 'v*.*.*'
+#
+#permissions:
+#  contents: write
+#
+#jobs:
+#  deploy:
+#    runs-on: self-hosted
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#
+#      - name: Get Commit SHA for Tag
+#        id: get_sha
+#        run: echo "IMAGE_TAG=$(git rev-list -n 1 ${{ github.ref_name }})" >> $GITHUB_ENV
+#
+#      - name: Set up kubectl
+#        run: |
+#          if ($env:RUNNER_OS -eq "Windows") {
+#            # Instalação no Windows
+#            Invoke-WebRequest -Uri "https://dl.k8s.io/release/v1.28.0/bin/windows/amd64/kubectl.exe" -OutFile "$env:USERPROFILE\kubectl.exe"
+#            [Environment]::SetEnvironmentVariable("Path", "$env:Path;$env:USERPROFILE", [EnvironmentVariableTarget]::Process)
+#          } elseif ($env:RUNNER_OS -eq "Linux") {
+#            # Instalação no Linux
+#            curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl"
+#            chmod +x ./kubectl
+#            sudo mv ./kubectl /usr/local/bin/kubectl
+#          } elseif ($env:RUNNER_OS -eq "macOS") {
+#            # Instalação no macOS
+#            curl -LO "https://dl.k8s.io/release/v1.28.0/bin/darwin/amd64/kubectl"
+#            chmod +x ./kubectl
+#            sudo mv ./kubectl /usr/local/bin/kubectl
+#          }
+#        shell: pwsh
+#
+#      - name: Test Kubernetes connection
+#        run: kubectl get nodes
+#
+#      - name: Deploy Kubernetes resources
+#        run: |
+#          kubectl apply -f ./kubernetes/prod/ --recursive
+#          kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ env.IMAGE_TAG }} --record
+#          kubectl rollout status deployment/phishing-quest-deployment

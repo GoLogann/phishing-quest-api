@@ -1,22 +1,24 @@
-name: Continuous Integration
+name: CI/CD Workflow
 
 on:
   push:
-    branches:
-      - 'main'
+    tags:
+      - 'v*.*.*'
 
 permissions:
   contents: write
 
 jobs:
-  build-and-deploy:
+  build-test-deploy:
     runs-on: self-hosted
     env:
-      IMAGE_TAG: ${{ github.sha }}
+      IMAGE_TAG: ${{ github.ref_name }} # A tag Git será usada como a tag Docker
     steps:
+      # Checkout do código
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Configurar Go e testar
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -32,34 +34,35 @@ jobs:
       - name: Run tests
         run: go test ./tests -v
 
+      # Fazer login no Docker Hub
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
+      # Build e push da imagem Docker
       - name: Build Docker image
         run: docker build -t loganncardoso/phishing-quest:${{ env.IMAGE_TAG }} .
 
       - name: Push Docker image to Docker Hub
         run: docker push loganncardoso/phishing-quest:${{ env.IMAGE_TAG }}
 
+      # Instalar kubectl
       - name: Set up kubectl
         run: |
           if ($env:RUNNER_OS -eq "Windows") {
-            # Instalação no Windows
             Invoke-WebRequest -Uri "https://dl.k8s.io/release/v1.28.0/bin/windows/amd64/kubectl.exe" -OutFile "$env:USERPROFILE\kubectl.exe"
             [Environment]::SetEnvironmentVariable("Path", "$env:Path;$env:USERPROFILE", [EnvironmentVariableTarget]::Process)
           } elseif ($env:RUNNER_OS -eq "Linux") {
-            # Instalação no Linux
             curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl"
             chmod +x ./kubectl
             sudo mv ./kubectl /usr/local/bin/kubectl
           } elseif ($env:RUNNER_OS -eq "macOS") {
-            # Instalação no macOS
             curl -LO "https://dl.k8s.io/release/v1.28.0/bin/darwin/amd64/kubectl"
             chmod +x ./kubectl
             sudo mv ./kubectl /usr/local/bin/kubectl
           }
         shell: pwsh
 
+      # Configurar o kubeconfig
       - name: Configure kubeconfig
         run: |
           if (!(Test-Path -Path "$HOME\.kube")) {
@@ -74,18 +77,15 @@ jobs:
           $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($currentUser, "FullControl", "Allow")
           $acl.SetAccessRule($accessRule)
           Set-Acl "$HOME\.kube\config" $acl
+        shell: pwsh
 
+      # Testar conexão com Kubernetes
       - name: Test Kubernetes connection
         run: kubectl get nodes
 
+      # Realizar o deploy no Kubernetes
       - name: Deploy Kubernetes resources
         run: |
           kubectl apply -f ./kubernetes/prod/ --recursive
-          kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ env.IMAGE_TAG }}
-          kubectl rollout status deployment/phishing-quest-deployment || exit 0
-
-      - name: Verify migrate directory contents
-        run: |
-          echo "Listing contents of migrate directory:"
-          Get-ChildItem -Path "${{ github.workspace }}/migrate" -Recurse
-        shell: pwsh
+          kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ env.IMAGE_TAG }} --record
+          kubectl rollout status deployment/phishing-quest-deployment

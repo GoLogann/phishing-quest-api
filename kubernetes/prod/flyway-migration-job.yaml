@@ -3,6 +3,8 @@ kind: Job
 metadata:
   name: flyway-migration-job
 spec:
+  activeDeadlineSeconds: 1800  # Define um tempo limite de 30 minutos
+  backoffLimit: 4  # Tenta o Job até 4 vezes em caso de falha
   template:
     spec:
       containers:
@@ -11,7 +13,6 @@ spec:
           args:
             - -configFiles=/flyway/conf/flyway.config
             - -locations=filesystem:/flyway/sql
-            - -connectRetries=60
             - migrate
           volumeMounts:
             - name: flyway-sql
@@ -21,8 +22,8 @@ spec:
       volumes:
         - name: flyway-sql
           configMap:
-            name: flyway-sql-configmap
+            name: flyway-sql-configmap  # Nome do ConfigMap que contém os scripts SQL
         - name: flyway-config
           secret:
-            secretName: flyway-config-secret
+            secretName: flyway-config-secret  # Nome do Secret que contém o arquivo flyway.config
       restartPolicy: OnFailure
