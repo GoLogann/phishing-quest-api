@@ -48,19 +48,22 @@ jobs:
       # Instalar kubectl
       - name: Set up kubectl
         run: |
-          if ($env:RUNNER_OS -eq "Windows") {
-            Invoke-WebRequest -Uri "https://dl.k8s.io/release/v1.28.0/bin/windows/amd64/kubectl.exe" -OutFile "$env:USERPROFILE\kubectl.exe"
-            [Environment]::SetEnvironmentVariable("Path", "$env:Path;$env:USERPROFILE", [EnvironmentVariableTarget]::Process)
-          } elseif ($env:RUNNER_OS -eq "Linux") {
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            curl -LO "https://dl.k8s.io/release/v1.28.0/bin/windows/amd64/kubectl.exe"
+            mkdir -p "$HOME/bin"
+            mv kubectl.exe "$HOME/bin/kubectl.exe"
+            echo "Adding $HOME/bin to PATH"
+            export PATH="$HOME/bin:$PATH"
+          elif [[ "$RUNNER_OS" == "Linux" ]]; then
             curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl"
             chmod +x ./kubectl
             sudo mv ./kubectl /usr/local/bin/kubectl
-          } elseif ($env:RUNNER_OS -eq "macOS") {
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
             curl -LO "https://dl.k8s.io/release/v1.28.0/bin/darwin/amd64/kubectl"
             chmod +x ./kubectl
             sudo mv ./kubectl /usr/local/bin/kubectl
-          }
-        shell: pwsh
+          fi
+        shell: bash
 
       # Configurar o kubeconfig
       - name: Configure kubeconfig
