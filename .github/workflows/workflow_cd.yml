@@ -5,42 +5,38 @@ on:
     tags:
       - 'v*.*.*'
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: self-hosted
-
+    env:
+      IMAGE_TAG: ${{ github.ref_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up kubectl
-        run: choco install kubernetes-cli -y
-
-      - name: Configure kubeconfig
         run: |
           if (!(Test-Path -Path "$HOME\.kube")) {
             New-Item -ItemType Directory -Force -Path "$HOME\.kube"
           }
-          "${{ secrets.KUBE_CONFIG }}" | Out-File -FilePath "$HOME\.kube\config" -Encoding ascii
-          icacls "$HOME\.kube\config" /inheritance:r /grant:r "$($env:USERNAME):F"
+          $KubeConfigContent = "${{ secrets.KUBE_CONFIG }}"
+          $KubeConfigContent | Out-File -FilePath "$HOME\.kube\config" -Encoding ascii
 
-      - name: Deploy PVC for Postgres
-        run: kubectl apply -f ./kubernetes/prod/postgres-pvc.yaml
+          # Ajustar permissões no Windows
+          $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+          $acl = Get-Acl "$HOME\.kube\config"
+          $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($currentUser, "FullControl", "Allow")
+          $acl.SetAccessRule($accessRule)
+          Set-Acl "$HOME\.kube\config" $acl
 
-      - name: Deploy Postgres Database
+      - name: Test Kubernetes connection
+        run: kubectl get nodes
+
+      - name: Deploy Kubernetes resources
         run: |
-          kubectl apply -f ./kubernetes/prod/postgres-deployment.yaml
-          kubectl apply -f ./kubernetes/prod/postgres-service.yaml
-
-      - name: Deploy ConfigMap to Kubernetes
-        run: kubectl apply -f ./kubernetes/prod/configmap.yaml
-
-      - name: Deploy Application to Kubernetes
-        run: |
-          kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ github.ref_name }} --record
-          kubectl apply -f ./kubernetes/prod/deployment.yaml
-          kubectl apply -f ./kubernetes/prod/service.yaml
-          kubectl apply -f ./kubernetes/prod/ingress.yaml
-
-      - name: Wait for application rollout
-        run: kubectl rollout status deployment/phishing-quest-deployment
+          kubectl apply -f ./kubernetes/prod/ --recursive
+          kubectl set image deployment/phishing-quest-deployment phishing-quest=loganncardoso/phishing-quest:${{ env.IMAGE_TAG }} --record
+          kubectl rollout status deployment/phishing-quest-deployment
