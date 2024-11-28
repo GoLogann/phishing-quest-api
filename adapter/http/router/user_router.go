@@ -12,5 +12,6 @@ func SetupUserRoutes(router *gin.Engine, userHandler *handler.UserHandler) {
 		userGroup.POST("", userHandler.CreateUser)
 		userGroup.POST("/login", userHandler.Login)
 		userGroup.GET("/:id", userHandler.GetUser)
+		userGroup.GET("", userHandler.GetTeste)
 	}
 }

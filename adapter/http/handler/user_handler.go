@@ -57,3 +57,7 @@ func (uh *UserHandler) GetUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, id)
 }
+
+func (uh *UserHandler) GetTeste(c *gin.Context) {
+	c.JSON(http.StatusOK, "olhaaaaaa")
+}
