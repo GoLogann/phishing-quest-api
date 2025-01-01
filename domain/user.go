@@ -21,6 +21,7 @@ type User struct {
 func (u *User) TableName() string {
 	return "phishing_quest.users"
 }
+
 func (u *User) Validate() error {
 	validate := validator.New()
 	return validate.Struct(u)
