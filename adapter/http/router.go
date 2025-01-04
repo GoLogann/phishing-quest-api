@@ -9,8 +9,8 @@ import (
 func SetupRouter(cont *container.Container) *gin.Engine {
 	r := gin.Default()
 
-	// Configuração das rotas com os handlers do container
 	router.SetupUserRoutes(r, cont.UserHandler)
+	router.SetupCategoryRoutes(r, cont.CategoryHandler)
 
 	return r
 }
