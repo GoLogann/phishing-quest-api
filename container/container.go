@@ -17,30 +17,39 @@ type Container struct {
 	CategoryRepo    *repository.ICategoryRepository
 	CategoryUseCase *usecase.CategoryUseCase
 	CategoryHandler *handler.CategoryHandler
+
+	QuestionRepo    *repository.IQuestionRepository
+	QuestionUseCase *usecase.QuestionUseCase
+	QuestionHandler *handler.QuestionHandler
 }
 
 func NewContainer() *Container {
 	db := postgres.InitDB()
 
 	userRepo := repository.NewUserRepository(db)
-
 	userUseCase := usecase.NewUserUseCase(userRepo)
-
 	userHandler := handler.NewUserHandler(userUseCase)
 
 	categoryRepo := repository.NewCategoryRepository(db)
-
 	categoryUseCase := usecase.NewCategoryUseCase(categoryRepo)
-
 	CategoryHandler := handler.NewCategoryHandler(categoryUseCase)
 
+	questionRepo := repository.NewQuestionRepository(db)
+	questionUseCase := usecase.NewQuestionUseCase(questionRepo)
+	QuestionHandler := handler.NewQuestionHandler(questionUseCase)
+
 	return &Container{
-		DB:              db,
-		UserRepo:        &userRepo,
-		UserUseCase:     userUseCase,
-		UserHandler:     userHandler,
+		DB:          db,
+		UserRepo:    &userRepo,
+		UserUseCase: userUseCase,
+		UserHandler: userHandler,
+
 		CategoryRepo:    &categoryRepo,
 		CategoryUseCase: categoryUseCase,
 		CategoryHandler: CategoryHandler,
+
+		QuestionRepo:    &questionRepo,
+		QuestionUseCase: questionUseCase,
+		QuestionHandler: QuestionHandler,
 	}
 }
