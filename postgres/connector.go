@@ -8,8 +8,6 @@ import (
 	"os"
 )
 
-var DB *gorm.DB
-
 func InitDB() *gorm.DB {
 
 	if err := godotenv.Load(); err != nil {
