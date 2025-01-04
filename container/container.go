@@ -10,9 +10,13 @@ import (
 
 type Container struct {
 	DB          *gorm.DB
-	UserRepo    repository.UserRepository
+	UserRepo    *repository.IUserRepository
 	UserUseCase *usecase.UserUseCase
 	UserHandler *handler.UserHandler
+
+	CategoryRepo    *repository.ICategoryRepository
+	CategoryUseCase *usecase.CategoryUseCase
+	CategoryHandler *handler.CategoryHandler
 }
 
 func NewContainer() *Container {
@@ -24,10 +28,19 @@ func NewContainer() *Container {
 
 	userHandler := handler.NewUserHandler(userUseCase)
 
+	categoryRepo := repository.NewCategoryRepository(db)
+
+	categoryUseCase := usecase.NewCategoryUseCase(categoryRepo)
+
+	CategoryHandler := handler.NewCategoryHandler(categoryUseCase)
+
 	return &Container{
-		DB:          db,
-		UserRepo:    userRepo,
-		UserUseCase: userUseCase,
-		UserHandler: userHandler,
+		DB:              db,
+		UserRepo:        &userRepo,
+		UserUseCase:     userUseCase,
+		UserHandler:     userHandler,
+		CategoryRepo:    &categoryRepo,
+		CategoryUseCase: categoryUseCase,
+		CategoryHandler: CategoryHandler,
 	}
 }

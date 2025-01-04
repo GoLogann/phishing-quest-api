@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -10,7 +11,10 @@ import (
 var DB *gorm.DB
 
 func InitDB() *gorm.DB {
-	var err error
+
+	if err := godotenv.Load(); err != nil {
+		logrus.Warn("No .env file found, using default environment variables")
+	}
 
 	logrus.SetLevel(logrus.InfoLevel)
 	logrus.SetFormatter(&logrus.TextFormatter{
@@ -28,7 +32,7 @@ func InitDB() *gorm.DB {
 		" TimeZone=" + getEnv("DB_TIMEZONE", "UTC") +
 		" connect_timeout=" + getEnv("DB_CONNECT_TIMEOUT", "5")
 
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"host":     os.Getenv("DB_HOST"),
