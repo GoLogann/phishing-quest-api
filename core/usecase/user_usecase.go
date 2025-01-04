@@ -13,16 +13,16 @@ import (
 )
 
 type UserUseCase struct {
-	userRepo repository.UserRepository
+	userRepo repository.IUserRepository
 }
 
-func NewUserUseCase(userRepo repository.UserRepository) *UserUseCase {
+func NewUserUseCase(userRepo repository.IUserRepository) *UserUseCase {
 	return &UserUseCase{userRepo: userRepo}
 }
 
 func (uc *UserUseCase) CreateUser(userRequest *domain.User) (*domain.User, error) {
 	existingUser, err := uc.userRepo.GetByEmail(userRequest.Email)
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil && !errors.Is(gorm.ErrRecordNotFound, err) {
 		return nil, err
 	}
 	if existingUser != nil {
@@ -49,14 +49,15 @@ func (uc *UserUseCase) CreateUser(userRequest *domain.User) (*domain.User, error
 		return nil, err
 	}
 
-	if err = uc.userRepo.Create(user); err != nil {
+	createdUser, err := uc.userRepo.Create(user)
+	if err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	return createdUser, nil
 }
 
-func (uc *UserUseCase) Login(userRequest *dto.UserLoginDTO) (*domain.User, error) {
+func (uc *UserUseCase) Login(userRequest *dto.UserLoginDTO) (*dto.UserLoginResponseDTO, error) {
 	user, err := uc.userRepo.GetByEmail(userRequest.Email)
 	if err != nil {
 		return nil, errors.New("usuário não encontrado")
@@ -66,7 +67,14 @@ func (uc *UserUseCase) Login(userRequest *dto.UserLoginDTO) (*domain.User, error
 		return nil, errors.New("senha incorreta")
 	}
 
-	return user, nil
+	userResponse := &dto.UserLoginResponseDTO{
+		Id:         user.Id,
+		Username:   user.Username,
+		Email:      user.Email,
+		TotalScore: user.TotalScore,
+	}
+
+	return userResponse, nil
 }
 
 func (uc *UserUseCase) UpdatePassword(user *domain.User, newPasswordHash string) {
