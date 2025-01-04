@@ -15,12 +15,14 @@ services:
       - phishing-quest-network
 
   phishing-quest-flyway-phishing-quest:
-    image: flyway/flyway:6.3.1
+    image: flyway/flyway:7.0.2
     container_name: phishingquest-flyway-phishing-quest
     command: -configFiles=/flyway/conf/flyway.config -locations=filesystem:/flyway/sql -connectRetries=60 migrate
     volumes:
-      - ./../migrate/changelogs:/flyway/sql
-      - ./../migrate/flyway.config:/flyway/conf/flyway.config
+      - ./migrate/changelogs:/flyway/sql
+      - ./migrate/flyway.config:/flyway/conf/flyway.config
+    depends_on:
+      - phishing-quest-postgresql
     networks:
       - phishing-quest-network
 

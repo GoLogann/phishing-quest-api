@@ -12,12 +12,10 @@ type UserHandler struct {
 	UserUseCase *usecase.UserUseCase
 }
 
-// NewUserHandler cria uma nova instância de UserHandler
 func NewUserHandler(uuc *usecase.UserUseCase) *UserHandler {
 	return &UserHandler{UserUseCase: uuc}
 }
 
-// CreateUser lida com a criação de um novo usuário
 func (uh *UserHandler) CreateUser(c *gin.Context) {
 	var userDTO *domain.User
 	if err := c.ShouldBindJSON(&userDTO); err != nil {
@@ -34,7 +32,6 @@ func (uh *UserHandler) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// Login Realiza login usando credenciais do usuário
 func (uh *UserHandler) Login(c *gin.Context) {
 	var userLoginDTO *dto.UserLoginDTO
 	if err := c.ShouldBindJSON(&userLoginDTO); err != nil {
