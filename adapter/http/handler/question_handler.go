@@ -32,6 +32,23 @@ func (qh *QuestionHandler) CreateQuestion(c *gin.Context) {
 	c.JSON(http.StatusOK, createdQuestion)
 }
 
+func (qh *QuestionHandler) ListAnswersByQuestion(c *gin.Context) {
+	idParam := c.Param("id")
+	questionID, err := uuid.Parse(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Question ID"})
+		return
+	}
+
+	answers, err := qh.questionUseCase.GetAnswersByQuestionID(questionID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Answers not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, answers)
+}
+
 func (qh *QuestionHandler) GetQuestion(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)

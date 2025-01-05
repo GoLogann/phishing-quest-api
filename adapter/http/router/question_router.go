@@ -5,12 +5,13 @@ import (
 	"phishing-quest/adapter/http/handler"
 )
 
-func SetupQuestionsRoutes(router *gin.Engine, questionsHandler *handler.QuestionHandler) {
-	categoryGroup := router.Group("api/v1/questions")
+func SetupQuestionRoutes(router *gin.Engine, questionsHandler *handler.QuestionHandler) {
+	questionsGroup := router.Group("api/v1/questions")
 	{
-		categoryGroup.POST("", questionsHandler.CreateQuestion)
-		categoryGroup.GET("/:id", questionsHandler.GetQuestion)
-		categoryGroup.PUT("/:id", questionsHandler.UpdateQuestion)
-		categoryGroup.DELETE("/:id", questionsHandler.DeleteQuestion)
+		questionsGroup.POST("", questionsHandler.CreateQuestion)
+		questionsGroup.GET("/:id", questionsHandler.GetQuestion)
+		questionsGroup.PUT("/:id", questionsHandler.UpdateQuestion)
+		questionsGroup.DELETE("/:id", questionsHandler.DeleteQuestion)
+		questionsGroup.GET("/:id/answers", questionsHandler.ListAnswersByQuestion)
 	}
 }
