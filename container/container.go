@@ -25,6 +25,19 @@ type Container struct {
 	AnswerRepo    *repository.IAnswerRepository
 	AnswerUseCase *usecase.AnswerUseCase
 	AnswerHandler *handler.AnswerHandler
+
+	UserScoreRepo *repository.IUserScoreRepository
+
+	UserAnswerRepo    *repository.IUserAnswerRepository
+	UserAnswerUseCase *usecase.UserAnswerUseCase
+	UserAnswerHandler *handler.UserAnswerHandler
+
+	GameUseCase *usecase.GameUseCase
+	GameHandler *handler.GameHandler
+
+	RankingRepo    *repository.IRankingRepository
+	RankingUseCase *usecase.RankingUseCase
+	RankingHandler *handler.RankingHandler
 }
 
 func NewContainer() *Container {
@@ -46,6 +59,19 @@ func NewContainer() *Container {
 	questionUseCase := usecase.NewQuestionUseCase(questionRepo, answerRepo)
 	questionHandler := handler.NewQuestionHandler(questionUseCase)
 
+	userScoreRepo := repository.NewUserScoreRepository(db)
+
+	userAnswerRepo := repository.NewUserAnswerRepository(db)
+	userAnswerUseCase := usecase.NewUserAnswerUseCase(userAnswerRepo)
+	userAnswerHandler := handler.NewUserAnswerHandler(userAnswerUseCase)
+
+	gameUseCase := usecase.NewGameUseCase(answerRepo, userRepo, userScoreRepo)
+	gameHandler := handler.NewGameHandler(gameUseCase)
+
+	rankingRepo := repository.NewRankingRepository(db)
+	rankingUseCase := usecase.NewRankingUseCase(rankingRepo)
+	rankingHandler := handler.NewRankingHandler(rankingUseCase)
+
 	return &Container{
 		DB:          db,
 		UserRepo:    &userRepo,
@@ -63,5 +89,18 @@ func NewContainer() *Container {
 		AnswerRepo:    &answerRepo,
 		AnswerUseCase: answerUseCase,
 		AnswerHandler: answerHandler,
+
+		UserScoreRepo: &userScoreRepo,
+
+		UserAnswerRepo:    &userAnswerRepo,
+		UserAnswerUseCase: userAnswerUseCase,
+		UserAnswerHandler: userAnswerHandler,
+
+		GameUseCase: gameUseCase,
+		GameHandler: gameHandler,
+
+		RankingRepo:    &rankingRepo,
+		RankingUseCase: rankingUseCase,
+		RankingHandler: rankingHandler,
 	}
 }
