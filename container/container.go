@@ -21,6 +21,10 @@ type Container struct {
 	QuestionRepo    *repository.IQuestionRepository
 	QuestionUseCase *usecase.QuestionUseCase
 	QuestionHandler *handler.QuestionHandler
+
+	AnswerRepo    *repository.IAnswerRepository
+	AnswerUseCase *usecase.AnswerUseCase
+	AnswerHandler *handler.AnswerHandler
 }
 
 func NewContainer() *Container {
@@ -34,9 +38,13 @@ func NewContainer() *Container {
 	categoryUseCase := usecase.NewCategoryUseCase(categoryRepo)
 	CategoryHandler := handler.NewCategoryHandler(categoryUseCase)
 
+	answerRepo := repository.NewAnswerRepository(db)
+	answerUseCase := usecase.NewAnswerUseCase(answerRepo)
+	answerHandler := handler.NewAnswerHandler(answerUseCase)
+
 	questionRepo := repository.NewQuestionRepository(db)
-	questionUseCase := usecase.NewQuestionUseCase(questionRepo)
-	QuestionHandler := handler.NewQuestionHandler(questionUseCase)
+	questionUseCase := usecase.NewQuestionUseCase(questionRepo, answerRepo)
+	questionHandler := handler.NewQuestionHandler(questionUseCase)
 
 	return &Container{
 		DB:          db,
@@ -50,6 +58,10 @@ func NewContainer() *Container {
 
 		QuestionRepo:    &questionRepo,
 		QuestionUseCase: questionUseCase,
-		QuestionHandler: QuestionHandler,
+		QuestionHandler: questionHandler,
+
+		AnswerRepo:    &answerRepo,
+		AnswerUseCase: answerUseCase,
+		AnswerHandler: answerHandler,
 	}
 }
