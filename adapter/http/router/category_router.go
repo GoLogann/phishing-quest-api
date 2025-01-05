@@ -10,5 +10,6 @@ func SetupCategoryRoutes(router *gin.Engine, categoryHandler *handler.CategoryHa
 	{
 		categoryGroup.POST("", categoryHandler.CreateCategory)
 		categoryGroup.GET("", categoryHandler.ListCategory)
+		categoryGroup.GET("/:category_id/questions")
 	}
 }

@@ -3,6 +3,7 @@ package domain
 import (
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"phishing-quest/dto"
 )
 
 type Answer struct {
@@ -19,4 +20,12 @@ func (a *Answer) TableName() string {
 func (a *Answer) Validate() error {
 	validate := validator.New()
 	return validate.Struct(a)
+}
+
+func (a *Answer) ToDTO() *dto.AnswerDTO {
+	return &dto.AnswerDTO{
+		Id:         a.Id,
+		AnswerText: a.AnswerText,
+		IsCorrect:  a.IsCorrect,
+	}
 }

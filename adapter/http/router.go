@@ -11,6 +11,7 @@ func SetupRouter(cont *container.Container) *gin.Engine {
 
 	router.SetupUserRoutes(r, cont.UserHandler)
 	router.SetupCategoryRoutes(r, cont.CategoryHandler)
-
+	router.SetupQuestionRoutes(r, cont.QuestionHandler)
+	router.SetupAnswerRoutes(r, cont.AnswerHandler)
 	return r
 }
