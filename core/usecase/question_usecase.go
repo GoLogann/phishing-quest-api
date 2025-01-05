@@ -8,10 +8,22 @@ import (
 
 type QuestionUseCase struct {
 	questionRepo repository.IQuestionRepository
+	answerRepo   repository.IAnswerRepository
 }
 
-func NewQuestionUseCase(questionRepo repository.IQuestionRepository) *QuestionUseCase {
-	return &QuestionUseCase{questionRepo: questionRepo}
+func NewQuestionUseCase(questionRepo repository.IQuestionRepository, answerRepo repository.IAnswerRepository) *QuestionUseCase {
+	return &QuestionUseCase{
+		questionRepo: questionRepo,
+		answerRepo:   answerRepo,
+	}
+}
+
+func (quc *QuestionUseCase) GetAnswersByQuestionID(questionID uuid.UUID) ([]*domain.Answer, error) {
+	answers, err := quc.answerRepo.GetByQuestionID(questionID)
+	if err != nil {
+		return nil, err
+	}
+	return answers, nil
 }
 
 func (quc *QuestionUseCase) CreateQuestion(questionRequest *domain.Question) (*domain.Question, error) {
@@ -45,7 +57,6 @@ func (quc *QuestionUseCase) GetQuestion(id uuid.UUID) (*domain.Question, error) 
 }
 
 func (quc *QuestionUseCase) UpdateQuestion(id uuid.UUID, questionRequest *domain.Question) (*domain.Question, error) {
-	// Obter a pergunta existente
 	question, err := quc.questionRepo.GetByID(id)
 	if err != nil {
 		return nil, err
