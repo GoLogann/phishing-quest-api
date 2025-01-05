@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"phishing-quest/core/usecase"
 	"phishing-quest/domain"
+	"phishing-quest/dto"
 )
 
 type QuestionHandler struct {
@@ -46,7 +47,17 @@ func (qh *QuestionHandler) ListAnswersByQuestion(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, answers)
+	var answerDTOs []*dto.AnswerDTO
+	for _, answer := range answers {
+		answerDTOs = append(answerDTOs, answer.ToDTO())
+	}
+
+	response := dto.QuestionAnswersDTO{
+		QuestionId: questionID,
+		Answers:    answerDTOs,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 func (qh *QuestionHandler) GetQuestion(c *gin.Context) {
