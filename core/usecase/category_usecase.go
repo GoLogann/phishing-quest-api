@@ -10,6 +10,7 @@ import (
 
 type CategoryUseCase struct {
 	categoryRepo repository.ICategoryRepository
+	questionRepo repository.IQuestionRepository
 }
 
 func NewCategoryUseCase(categoryRepo repository.ICategoryRepository) *CategoryUseCase {
@@ -50,4 +51,12 @@ func (cuc *CategoryUseCase) ListCategories() ([]*domain.Category, error) {
 	}
 
 	return categories, err
+}
+
+func (cuc *CategoryUseCase) GetQuestionsByCategoryID(categoryID uuid.UUID) ([]*domain.Question, error) {
+	questions, err := cuc.questionRepo.GetByCategoryID(categoryID)
+	if err != nil {
+		return nil, err
+	}
+	return questions, nil
 }
